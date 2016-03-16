@@ -22,7 +22,7 @@ export class IosAppRunnerHelper {
         }
 
         return IosAppRunnerHelper.mountDeveloperImage().then(function(): Q.Promise<child_process.ChildProcess> {
-            var deferred = Q.defer<child_process.ChildProcess>();
+            const deferred = Q.defer<child_process.ChildProcess>();
             SharedState.nativeDebuggerProxyInstance = child_process.spawn("idevicedebugserverproxy", [proxyPort.toString()]);
             SharedState.nativeDebuggerProxyInstance.once("error", function(err: any): void {
                 deferred.reject(err);
@@ -47,17 +47,16 @@ export class IosAppRunnerHelper {
                 throw err;
             }).spread<string>(function(stdout: string, stderr: string): string {
                 // First find the path of the app on the device
-                var filename: string = stdout.trim();
+                const filename: string = stdout.trim();
                 if (!/^\/tmp\/[0-9]+\.ideviceinstaller$/.test(filename)) {
                     throw new Error("WrongInstalledAppsFile");
                 }
 
-                var list: any[] = pl.parse(fs.readFileSync(filename, 'utf8'));
+                const list: any[] = pl.parse(fs.readFileSync(filename, 'utf8'));
                 fs.unlink(filename);
-                for (var i: number = 0; i < list.length; ++i) {
+                for (let i: number = 0; i < list.length; ++i) {
                     if (list[i].CFBundleIdentifier === packageId) {
-                        var path: string = list[i].Path;
-                        return path;
+                        return list[i].Path;
                     }
                 }
 
@@ -77,9 +76,9 @@ export class IosAppRunnerHelper {
         // We expect a '+' for each message sent, followed by a $OK#9a to indicate that everything has worked.
         // For more info, see http://www.opensource.apple.com/source/lldb/lldb-167.2/docs/lldb-gdb-remote.txt
         const socket: net.Socket = new net.Socket();
-        var initState: number = 0;
-        var endStatus: number = null;
-        var endSignal: number = null;
+        let initState: number = 0;
+        let endStatus: number = null;
+        let endSignal: number = null;
 
         const deferred1: Q.Deferred<net.Socket> = Q.defer<net.Socket>();
         const deferred2: Q.Deferred<net.Socket> = Q.defer<net.Socket>();
@@ -142,7 +141,7 @@ export class IosAppRunnerHelper {
 
         socket.connect(portNumber, "localhost", function(): void {
             // set argument 0 to the (encoded) path of the app
-            var cmd: string = IosAppRunnerHelper.makeGdbCommand("A" + encodedPath.length + ",0," + encodedPath);
+            const cmd: string = IosAppRunnerHelper.makeGdbCommand("A" + encodedPath.length + ",0," + encodedPath);
             initState++;
             socket.write(cmd);
             setTimeout(function(): void {
@@ -152,7 +151,7 @@ export class IosAppRunnerHelper {
 
         return deferred1.promise.then(function(sock: net.Socket): Q.Promise<net.Socket> {
             // Set the step and continue thread to any thread
-            var cmd: string = IosAppRunnerHelper.makeGdbCommand("Hc0");
+            const cmd: string = IosAppRunnerHelper.makeGdbCommand("Hc0");
             initState++;
             sock.write(cmd);
             setTimeout(function(): void {
@@ -161,7 +160,7 @@ export class IosAppRunnerHelper {
             return deferred2.promise;
         }).then(function(sock: net.Socket): Q.Promise<net.Socket> {
             // Continue execution; actually start the app running.
-            var cmd: string = IosAppRunnerHelper.makeGdbCommand("c");
+            const cmd: string = IosAppRunnerHelper.makeGdbCommand("c");
             initState++;
             sock.write(cmd);
             setTimeout(function(): void {
@@ -179,9 +178,9 @@ export class IosAppRunnerHelper {
     private static mountDeveloperImage(): Q.Promise<any> {
         return IosAppRunnerHelper.getDiskImage()
             .then(function(path: string): Q.Promise<any> {
-                var imagemounter: child_process.ChildProcess = child_process.spawn("ideviceimagemounter", [path]);
-                var deferred: Q.Deferred<any> = Q.defer();
-                var stdout: string = "";
+                const imagemounter: child_process.ChildProcess = child_process.spawn("ideviceimagemounter", [path]);
+                const deferred: Q.Deferred<any> = Q.defer();
+                let stdout: string = "";
                 imagemounter.stdout.on("data", function(data: any): void {
                     stdout += data.toString();
                 });
@@ -207,7 +206,7 @@ export class IosAppRunnerHelper {
 
     private static getDiskImage(): Q.Promise<string> {
         // Attempt to find the OS version of the iDevice, e.g. 7.1
-        var versionInfo: Q.Promise<any> = promiseExec("ideviceinfo -s -k ProductVersion").spread<string>(function(stdout: string, stderr: string): string {
+        const versionInfo: Q.Promise<any> = promiseExec("ideviceinfo -s -k ProductVersion").spread<string>(function(stdout: string, stderr: string): string {
             return stdout.trim().substring(0, 3); // Versions for DeveloperDiskImage seem to be X.Y, while some device versions are X.Y.Z
             // NOTE: This will almost certainly be wrong in the next few years, once we hit version 10.0 
         }, function(): string {
@@ -215,19 +214,19 @@ export class IosAppRunnerHelper {
         });
 
         // Attempt to find the path where developer resources exist.
-        var pathInfo: Q.Promise<any> = promiseExec("xcrun -sdk iphoneos --show-sdk-platform-path").spread<string>(function(stdout: string, stderr: string): string {
-            var sdkpath: string = stdout.trim();
+        const pathInfo: Q.Promise<any> = promiseExec("xcrun -sdk iphoneos --show-sdk-platform-path").spread<string>(function(stdout: string, stderr: string): string {
+            const sdkpath: string = stdout.trim();
             return sdkpath;
         });
 
         // Attempt to find the developer disk image for the appropriate 
         return Q.all([versionInfo, pathInfo]).spread<string>(function(version: string, sdkpath: string): Q.Promise<string> {
-            var find: child_process.ChildProcess = child_process.spawn("find", [sdkpath, "-path", "*" + version + "*", "-name", "DeveloperDiskImage.dmg"]);
-            var deferred: Q.Deferred<string> = Q.defer<string>();
+            const find: child_process.ChildProcess = child_process.spawn("find", [sdkpath, "-path", "*" + version + "*", "-name", "DeveloperDiskImage.dmg"]);
+            const deferred: Q.Deferred<string> = Q.defer<string>();
 
             find.stdout.on("data", function(data: any): void {
-                var dataStr: string = data.toString();
-                var path: string = dataStr.split("\n")[0].trim();
+                const dataStr: string = data.toString();
+                const path: string = dataStr.split("\n")[0].trim();
                 if (!path) {
                     deferred.reject(new Error("FailedFindDeveloperDiskImage"));
                 } else {
@@ -243,14 +242,14 @@ export class IosAppRunnerHelper {
     }
 
     private static makeGdbCommand(command: string): string {
-        var stringSum: number = 0;
-        for (var i: number = 0; i < command.length; i++) {
+        let stringSum: number = 0;
+        for (let i: number = 0; i < command.length; i++) {
             stringSum += command.charCodeAt(i);
         }
 
         stringSum = stringSum % 256;
 
-        var checksum: string = stringSum.toString(16).toUpperCase();
+        let checksum: string = stringSum.toString(16).toUpperCase();
         if (checksum.length < 2) {
             checksum = "0" + checksum;
         }
