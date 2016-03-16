@@ -1,0 +1,21 @@
+{
+    "name": "idevice-app-launcher",
+    "description": "Utility methods to launch iOS apps on iOS devices using libimobiledevice.",
+    "version": "0.1.0",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/microsoft/idevice-app-launcher"
+    },
+    "main": "out/index.js",
+    "license": "MIT",
+    "dependencies": {
+        "q": "^1.4.1",
+        "plist": "^1.2.0"
+    },
+    "devDependencies": {
+        "typescript": "^1.8.7"
+    },
+    "scripts": {
+        "prepublish": "tsc"
+    }
+}
