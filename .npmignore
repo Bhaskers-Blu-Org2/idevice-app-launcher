@@ -2,3 +2,4 @@
 tsconfig.json
 typings
 src
+out/test

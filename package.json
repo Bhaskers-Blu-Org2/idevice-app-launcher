@@ -13,9 +13,12 @@
         "plist": "^1.2.0"
     },
     "devDependencies": {
-        "typescript": "^1.8.7"
+        "typescript": "^1.8.7",
+        "mocha": "^2.4.5",
+        "should": "^8.2.2"
     },
     "scripts": {
-        "prepublish": "tsc"
+        "prepublish": "tsc",
+        "test": "mocha out/test"
     }
 }
