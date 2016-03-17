@@ -36,7 +36,7 @@ export class IosAppRunnerHelper {
 
     // Attempt to start the app on the device, using the debug server proxy on a given port.
     // Returns a socket speaking remote gdb protocol with the debug server proxy.
-    public static startApp(packageId: string, proxyPort: number, appLaunchStepTimeout: number): Q.Promise<net.Socket> {
+    public static startApp(packageId: string, proxyPort: number, appLaunchStepTimeout: number, sessionEndCallback?: (isCrash: boolean) => void): Q.Promise<net.Socket> {
         // When a user has many apps installed on their device, the response from ideviceinstaller may be large (500k or more)
         // This exceeds the maximum stdout size that exec allows, so we redirect to a temp file.
         return promiseExec("ideviceinstaller -l -o xml > /tmp/$$.ideviceinstaller && echo /tmp/$$.ideviceinstaller")
@@ -62,11 +62,11 @@ export class IosAppRunnerHelper {
 
                 throw new Error("PackageNotInstalled");
             }).then(function(path: string): Q.Promise<net.Socket> {
-                return IosAppRunnerHelper.startAppViaDebugger(proxyPort, path, appLaunchStepTimeout);
+                return IosAppRunnerHelper.startAppViaDebugger(proxyPort, path, appLaunchStepTimeout, sessionEndCallback);
             });
     }
 
-    public static startAppViaDebugger(portNumber: number, packagePath: string, appLaunchStepTimeout: number): Q.Promise<net.Socket> {
+    public static startAppViaDebugger(portNumber: number, packagePath: string, appLaunchStepTimeout: number, sessionEndCallback?: (isCrash: boolean) => void): Q.Promise<net.Socket> {
         const encodedPath: string = IosAppRunnerHelper.encodePath(packagePath);
 
         // We need to send 3 messages to the proxy, waiting for responses between each message:
@@ -95,16 +95,25 @@ export class IosAppRunnerHelper {
                     const status: number = parseInt(data.substring(2, 4), 16);
                     endStatus = status;
                     socket.end();
+                    if (sessionEndCallback) {
+                        sessionEndCallback(false);
+                    }
                 } else if (data[1] === "X") {
                     // The app process exited because of signal given by data[2-3]
                     const signal: number = parseInt(data.substring(2, 4), 16);
                     endSignal = signal;
                     socket.end();
+                    if (sessionEndCallback) {
+                        sessionEndCallback(false);
+                    }
                 } else if (data[1] === "T") {
                     // The debugger has stopped the process for some reason.
                     // The message includes register contents and stop signal and other data,
                     // but for our purposes it is opaque
                     socket.end();
+                    if (sessionEndCallback) {
+                        sessionEndCallback(true);
+                    }
                 } else if (data.substring(1, 3) === "OK") {
                     // last command was received OK;
                     if (initState === 1) {

@@ -23,12 +23,12 @@ function defaultError(err: Error) {
     throw err;
 }
 
-export function startApp(packageId: string, proxyPort: number, appLaunchStepTimeout: number = 5000) {
-    return IosAppRunnerHelper.startApp(packageId, proxyPort, appLaunchStepTimeout).catch(defaultError);
+export function startApp(packageId: string, proxyPort: number, appLaunchStepTimeout: number = 5000, sessionEndCallback?: (isCrash: boolean) => void) {
+    return IosAppRunnerHelper.startApp(packageId, proxyPort, appLaunchStepTimeout, sessionEndCallback).catch(defaultError);
 }
 
-export function startAppViaDebugger(portNumber: number, packagePath: string, appLaunchStepTimeout: number = 5000) {
-    return IosAppRunnerHelper.startAppViaDebugger(portNumber, packagePath, appLaunchStepTimeout).catch(defaultError);
+export function startAppViaDebugger(portNumber: number, packagePath: string, appLaunchStepTimeout: number = 5000, sessionEndCallback?: (isCrash: boolean) => void) {
+    return IosAppRunnerHelper.startAppViaDebugger(portNumber, packagePath, appLaunchStepTimeout, sessionEndCallback).catch(defaultError);
 }
 
 export function startDebugProxy(proxyPort: number) {
