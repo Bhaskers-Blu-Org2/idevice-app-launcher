@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for details.
 
-/// <reference path="./node.d.ts" />
-/// <reference path="./q.d.ts" />
+/// <reference path="./node/node.d.ts" />
+/// <reference path="./q/q.d.ts" />
 
 declare module "idevice-app-launcher" {
 	import * as child_process from "child_process";
@@ -16,4 +16,7 @@ declare module "idevice-app-launcher" {
 	}		
 
 	export var raw: typeof IosAppRunnerHelper;
+	export function startDebugProxy(proxyPort: number): Q.Promise<child_process.ChildProcess>;
+	export function startApp(packageId: string, proxyPort: number, appLaunchStepTimeout?: number, sessionEndCallback?: (isCrash: boolean) => void): Q.Promise<net.Socket>;
+	export function startAppViaDebugger(portNumber: number, packagePath: string, appLaunchStepTimeout?: number, sessionEndCallback?: (isCrash: boolean) => void): Q.Promise<net.Socket>;
 }
