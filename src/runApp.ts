@@ -216,8 +216,9 @@ export class IosAppRunnerHelper {
     private static getDiskImage(): Q.Promise<string> {
         // Attempt to find the OS version of the iDevice, e.g. 7.1
         const versionInfo: Q.Promise<any> = promiseExec("ideviceinfo -s -k ProductVersion").spread<string>(function(stdout: string, stderr: string): string {
-            return stdout.trim().substring(0, 3); // Versions for DeveloperDiskImage seem to be X.Y, while some device versions are X.Y.Z
-            // NOTE: This will almost certainly be wrong in the next few years, once we hit version 10.0 
+            let version = stdout.trim().split(".");
+            version.splice(2); // Strip everything past the minor version
+            return version.join(".");
         }, function(): string {
             throw new Error("FailedGetDeviceInfo");
         });
