@@ -27,8 +27,13 @@ export class IosAppRunnerHelper {
             SharedState.nativeDebuggerProxyInstance.once("error", function(err: any): void {
                 deferred.reject(err);
             });
+            SharedState.nativeDebuggerProxyInstance.once("exit", function (): void {
+                deferred.reject(new Error("IDeviceDebugServerProxyExitedEarly"));
+            })
             // Allow 200ms for the spawn to error out, ~125ms isn't uncommon for some failures
-            Q.delay(200).then(() => deferred.resolve(SharedState.nativeDebuggerProxyInstance));
+            Q.delay(200).then(() => {
+                deferred.resolve(SharedState.nativeDebuggerProxyInstance)
+            });
 
             return deferred.promise;
         });
