@@ -125,6 +125,12 @@ export class IosAppRunnerHelper {
                         deferred1.resolve(socket);
                     } else if (initState === 2) {
                         deferred2.resolve(socket);
+                    } else if (initState === 3) {
+                        // iOS 10 seems to have changed how output is reported over the debugging channel
+                        // We no longer get the "O<message>#<hash>" message that we expected in the past,
+                        // although the app launches correctly. Instead we assume that if we get the OK
+                        // message that the app is probably launched.
+                        deferred3.resolve(socket);
                     }
                 } else if (data[1] === "O") {
                     // STDOUT was written to, and the rest of the input until reaching a '#' is a hex-encoded string of that output
